@@ -74,7 +74,7 @@ whatsappForm?.addEventListener('submit', (event) => {
     '',
     `الاسم: ${data.get('name')}`,
     `رقم واتساب: ${data.get('whatsapp')}`,
-    `البريد الإلكتروني: ${data.get('email')}`,
+    `العنوان: ${data.get('address')}`,
     `الخدمة المطلوبة: ${data.get('service')}`,
     `التفاصيل: ${data.get('details')}`
   ].join('\n');
