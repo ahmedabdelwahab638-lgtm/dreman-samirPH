@@ -88,7 +88,11 @@ whatsappForm?.addEventListener('submit', (event) => {
   window.location.assign(whatsappUrl);
 });
 
-const normalizeDrugName = (value) => String(value ?? '')
+const normalizeDigits = (value) => String(value ?? '')
+  .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+  .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)));
+
+const normalizeDrugName = (value) => normalizeDigits(value)
   .normalize('NFKC')
   .toLocaleLowerCase('ar-EG')
   .replace(/[\u064b-\u065f\u0670]/g, '')
@@ -98,6 +102,82 @@ const normalizeDrugName = (value) => String(value ?? '')
   .replace(/[^\p{L}\p{N}]+/gu, ' ')
   .replace(/\s+/g, ' ')
   .trim();
+
+const phoneticCharacterMap = {
+  a: '', e: '', i: '', o: '', u: '', y: '', w: '',
+  b: 'b', p: 'b', f: 'f', v: 'f', t: 't', d: 'd',
+  k: 'k', q: 'k', c: 'k', g: 'g', j: 'g',
+  s: 's', z: 'z', r: 'r', l: 'l', m: 'm', n: 'n', h: 'h', x: 'ks',
+  ا: '', أ: '', إ: '', آ: '', ء: '', ئ: '', ؤ: '', ع: '',
+  و: '', ي: '', ى: '', ة: 'h',
+  ب: 'b', پ: 'b', ف: 'f', ڤ: 'f', ت: 't', ط: 't', د: 'd', ض: 'd',
+  ك: 'k', ق: 'k', ج: 'g', چ: 'g', غ: 'g',
+  س: 's', ص: 's', ز: 'z', ذ: 'z', ظ: 'z',
+  ش: 'sh', ث: 'th', خ: 'kh', ح: 'h', ه: 'h',
+  ر: 'r', ل: 'l', م: 'm', ن: 'n'
+};
+
+function buildPhoneticKey(value, { chAs = 'sh', softC = false } = {}) {
+  let normalized = normalizeDrugName(value)
+    .replace(/ph/g, '\ue000')
+    .replace(/sh/g, '\ue001')
+    .replace(/th/g, '\ue002')
+    .replace(/kh/g, '\ue003')
+    .replace(/gh/g, '\ue004')
+    .replace(/qu/g, '\ue005')
+    .replace(/ck/g, '\ue005')
+    .replace(/ch/g, chAs === 'k' ? '\ue005' : '\ue001');
+
+  if (softC) normalized = normalized.replace(/c(?=[eiy])/g, 's');
+
+  return [...normalized]
+    .map((character) => {
+      if (character === '\ue000') return 'f';
+      if (character === '\ue001') return 'sh';
+      if (character === '\ue002') return 'th';
+      if (character === '\ue003') return 'kh';
+      if (character === '\ue004') return 'g';
+      if (character === '\ue005') return 'k';
+      if (/\d/.test(character)) return character;
+      if (/\s/.test(character)) return ' ';
+      return phoneticCharacterMap[character] ?? '';
+    })
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function createPhoneticKeys(value) {
+  return [...new Set([
+    buildPhoneticKey(value),
+    buildPhoneticKey(value, { chAs: 'k' }),
+    buildPhoneticKey(value, { softC: true }),
+    buildPhoneticKey(value, { chAs: 'k', softC: true })
+  ])].filter(Boolean);
+}
+
+function getDrugMatchRank(item, query, queryParts, queryPhoneticKeys, usePhoneticSearch) {
+  if (item.searchName === query) return 0;
+  if (item.searchName.startsWith(query)) return 1;
+  if (queryParts.every((part) => item.searchName.includes(part))) return 2;
+  if (!usePhoneticSearch) return Number.POSITIVE_INFINITY;
+
+  let bestPhoneticRank = Number.POSITIVE_INFINITY;
+  for (const queryKey of queryPhoneticKeys) {
+    for (const itemKey of item.phoneticKeys) {
+      if (itemKey === queryKey) bestPhoneticRank = Math.min(bestPhoneticRank, 3);
+      else if (itemKey.startsWith(queryKey)) bestPhoneticRank = Math.min(bestPhoneticRank, 4);
+      else if (itemKey.includes(queryKey)) bestPhoneticRank = Math.min(bestPhoneticRank, 5);
+      else {
+        const phoneticParts = queryKey.split(' ');
+        if (phoneticParts.every((part) => itemKey.includes(part))) {
+          bestPhoneticRank = Math.min(bestPhoneticRank, 6);
+        }
+      }
+    }
+  }
+  return bestPhoneticRank;
+}
 
 function createWhatsAppLink(drugName, available) {
   const availabilityLine = available
@@ -170,7 +250,11 @@ if (drugSearchInput && drugSearchResults) {
     })
     .then((data) => {
       const inventory = Array.isArray(data.items)
-        ? data.items.map((item) => ({ ...item, searchName: normalizeDrugName(item.name) }))
+        ? data.items.map((item) => ({
+          ...item,
+          searchName: normalizeDrugName(item.name),
+          phoneticKeys: createPhoneticKeys(item.name)
+        }))
         : [];
 
       if (inventoryUpdateDate && data.updatedAt) inventoryUpdateDate.textContent = data.updatedAt;
@@ -182,6 +266,10 @@ if (drugSearchInput && drugSearchResults) {
       function renderDrugSearch() {
         const rawQuery = drugSearchInput.value.trim();
         const query = normalizeDrugName(rawQuery);
+        const isArabicQuery = /[\u0600-\u06ff]/.test(query);
+        const queryPhoneticKeys = createPhoneticKeys(query);
+        const phoneticLength = (queryPhoneticKeys[0] ?? '').replace(/\s/g, '').length;
+        const usePhoneticSearch = isArabicQuery && phoneticLength >= 3;
         drugSearchClear.hidden = rawQuery.length === 0;
 
         if (query.length < 2) {
@@ -191,15 +279,19 @@ if (drugSearchInput && drugSearchResults) {
 
         const queryParts = query.split(' ');
         const matches = inventory
-          .filter((item) => queryParts.every((part) => item.searchName.includes(part)))
-          .sort((first, second) => {
-            const firstRank = first.searchName === query ? 0 : first.searchName.startsWith(query) ? 1 : 2;
-            const secondRank = second.searchName === query ? 0 : second.searchName.startsWith(query) ? 1 : 2;
-            return firstRank - secondRank || first.name.localeCompare(second.name, 'ar-EG', { numeric: true });
-          });
+          .map((item) => ({
+            item,
+            rank: getDrugMatchRank(item, query, queryParts, queryPhoneticKeys, usePhoneticSearch)
+          }))
+          .filter(({ rank }) => Number.isFinite(rank))
+          .sort((first, second) => first.rank - second.rank || first.item.name.localeCompare(second.item.name, 'ar-EG', { numeric: true }))
+          .map(({ item }) => item);
 
         if (!matches.length) {
-          drugSearchResults.replaceChildren(createEmptySearchState('لم نجد الاسم في آخر تحديث. يمكنك طلب توفيره مباشرةً.', rawQuery));
+          const missingMessage = isArabicQuery
+            ? 'لم نجد الاسم بهذه الكتابة. جرّب كتابته بالإنجليزية كما هو على العبوة، أو اطلب توفيره مباشرةً.'
+            : 'لم نجد الاسم في آخر تحديث. يمكنك طلب توفيره مباشرةً.';
+          drugSearchResults.replaceChildren(createEmptySearchState(missingMessage, rawQuery));
           return;
         }
 
