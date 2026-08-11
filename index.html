@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;family=Playfair+Display:wght@600;700;800&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260808-shortages">
+  <link rel="stylesheet" href="styles.css?v=20260812-drug-search">
   <script>
     try {
       const savedTheme = localStorage.getItem('eman-pharmacy-theme');
@@ -84,6 +84,7 @@
       <nav class="main-nav" id="main-nav" aria-label="التنقل الرئيسي">
         <a href="#services">خدماتنا</a>
         <a href="#shortages">خدمة النواقص</a>
+        <a href="#drug-search">ابحث عن دوائك</a>
         <a href="#trust">لماذا نحن</a>
         <a href="#pricing">الأسعار والعروض</a>
         <a href="#contact">تواصل معنا</a>
@@ -285,6 +286,33 @@
       </div>
     </section>
 
+    <section class="section drug-search-section" id="drug-search">
+      <div class="shell drug-search-layout">
+        <div class="drug-search-copy reveal">
+          <span class="section-label">بحث سريع قبل الحضور</span>
+          <h2>ابحث عن دوائك</h2>
+          <p>اكتب اسم الدواء أو جزءًا منه لمعرفة حالته حسب آخر تحديث، ثم أرسل طلبك مباشرةً إلى الصيدلية على واتساب.</p>
+          <div class="inventory-update" aria-label="تاريخ آخر تحديث للمخزون">
+            <span aria-hidden="true">↻</span>
+            <div><small>آخر تحديث</small><strong id="inventory-update-date">10 أغسطس 2026</strong></div>
+          </div>
+          <p class="inventory-privacy">نعرض اسم الدواء وحالة التوفر فقط. لا نعرض الكميات أو أسعار الشراء أو أي بيانات للعملاء.</p>
+        </div>
+
+        <div class="drug-search-panel reveal" data-delay="100">
+          <label for="drug-search-input">اسم الدواء</label>
+          <div class="drug-search-field">
+            <input id="drug-search-input" type="search" inputmode="search" autocomplete="off" dir="auto" placeholder="جاري تجهيز قائمة الأدوية…" aria-describedby="drug-search-help" disabled>
+            <button id="drug-search-clear" type="button" aria-label="مسح البحث" hidden>مسح</button>
+          </div>
+          <p id="drug-search-help" class="drug-search-help">اكتب حرفين على الأقل، بالعربية أو الإنجليزية.</p>
+          <div id="drug-search-results" class="drug-search-results" aria-live="polite" aria-busy="true">
+            <div class="drug-search-empty">جاري تحميل بيانات التوفر…</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section trust-section" id="trust">
       <div class="shell">
         <div class="section-heading centered reveal">
@@ -460,7 +488,7 @@
         <div><strong>صيدلية دكتورة إيمان سمير الصاوي</strong><p>رعاية موثوقة لصحة أفضل.</p></div>
       </div>
       <div class="footer-links">
-        <a href="#services">الخدمات</a><a href="#shortages">النواقص</a><a href="#pricing">العروض</a><a href="#contact">التواصل</a>
+        <a href="#services">الخدمات</a><a href="#shortages">النواقص</a><a href="#drug-search">ابحث عن دوائك</a><a href="#pricing">العروض</a><a href="#contact">التواصل</a>
       </div>
       <div class="footer-contact"><span>واتساب واتصال</span><a href="tel:+201055283966" dir="ltr">010&nbsp;5528&nbsp;3966</a></div>
     </div>
@@ -472,6 +500,6 @@
     <span class="whatsapp-text"><small>تواصل الآن</small><strong>واتساب</strong></span>
   </a>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=20260812-drug-search"></script>
 </body>
 </html>
