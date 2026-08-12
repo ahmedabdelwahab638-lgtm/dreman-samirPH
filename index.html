@@ -32,24 +32,31 @@
     try {
       savedAnalyticsConsent = localStorage.getItem('eman-analytics-consent') === 'granted' ? 'granted' : 'denied';
     } catch (error) {}
-    gtag('consent', 'default', {
-      analytics_storage: savedAnalyticsConsent,
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      wait_for_update: 500
-    });
-    gtag('js', new Date());
-    gtag('config', 'G-XY2PCPGG32', {
-      anonymize_ip: true,
-      allow_google_signals: false,
-      allow_ad_personalization_signals: false,
-      send_page_view: savedAnalyticsConsent === 'granted',
-      page_location: window.location.origin + window.location.pathname,
-      page_path: window.location.pathname
-    });
+    window.loadEmanAnalytics = function({ sendPageView = true } = {}) {
+      if (window.emanAnalyticsLoaded) return;
+      window.emanAnalyticsLoaded = true;
+      gtag('consent', 'default', {
+        analytics_storage: 'granted',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-XY2PCPGG32', {
+        anonymize_ip: true,
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false,
+        send_page_view: sendPageView,
+        page_location: window.location.origin + window.location.pathname,
+        page_path: window.location.pathname
+      });
+      const analyticsScript = document.createElement('script');
+      analyticsScript.async = true;
+      analyticsScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-XY2PCPGG32';
+      document.head.append(analyticsScript);
+    };
+    if (savedAnalyticsConsent === 'granted') window.loadEmanAnalytics();
   </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XY2PCPGG32"></script>
   <link rel="icon" href="assets/mark.webp" type="image/webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

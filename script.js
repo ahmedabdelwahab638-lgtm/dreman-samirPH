@@ -33,15 +33,10 @@ document.querySelectorAll('a[href*="wa.me/201055283966"]').forEach((link) => pro
 
 function setAnalyticsConsent(status, { sendPageView = false } = {}) {
   try { localStorage.setItem('eman-analytics-consent', status); } catch (error) {}
-  if (typeof window.gtag === 'function') {
+  if (status === 'granted') {
+    window.loadEmanAnalytics?.({ sendPageView });
+  } else if (window.emanAnalyticsLoaded && typeof window.gtag === 'function') {
     window.gtag('consent', 'update', { analytics_storage: status });
-    if (status === 'granted' && sendPageView) {
-      window.gtag('event', 'page_view', {
-        page_title: document.title,
-        page_location: window.location.origin + window.location.pathname,
-        page_path: window.location.pathname
-      });
-    }
   }
   consentBanner?.setAttribute('hidden', '');
 }
