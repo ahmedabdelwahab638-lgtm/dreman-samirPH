@@ -251,6 +251,9 @@ h1, h2, h3 {
 .shortage-product { overflow: hidden; border: 1px solid rgba(224, 180, 84, .28); border-radius: 22px; background: rgba(255, 255, 255, .07); box-shadow: 0 22px 55px rgba(0, 0, 0, .18); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
 .shortage-product:hover { transform: translateY(-5px); border-color: rgba(224, 180, 84, .62); box-shadow: 0 28px 65px rgba(0, 0, 0, .28); }
 .shortage-product > img { width: 100%; height: auto; aspect-ratio: 1; display: block; object-fit: cover; background: #fffaf0; }
+.shortage-product.recent-product > img { aspect-ratio: auto; object-fit: contain; }
+.shortage-product.featured-recent-product { grid-column: span 2; }
+.shortage-product.featured-recent-product > img { aspect-ratio: 4 / 3; }
 .shortage-product > div { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 17px; }
 .shortage-product strong { font-size: 13px; line-height: 1.55; }
 .shortage-product a { flex: 0 0 auto; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; border: 1px solid rgba(224, 180, 84, .42); border-radius: 999px; color: var(--gold-200); font-size: 10px; font-weight: 700; transition: background .2s ease, color .2s ease; }
@@ -489,6 +492,7 @@ h1, h2, h3 {
   .shortage-showcase-heading > p { margin-top: 14px; }
   .shortage-gallery { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(278px, 82vw); gap: 14px; margin-inline: -14px; padding: 4px 14px 16px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-inline: contain; scrollbar-width: thin; scrollbar-color: rgba(224, 180, 84, .65) rgba(255, 255, 255, .08); }
   .shortage-product { scroll-snap-align: start; }
+  .shortage-product.featured-recent-product { grid-column: auto; }
   .shortage-product:hover { transform: none; }
   .shortage-swipe-hint { display: block; margin: 8px 0 0; color: rgba(255, 255, 255, .55); font-size: 11px; text-align: center; }
   .drug-search-panel { padding: 24px 16px; }
