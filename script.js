@@ -10,7 +10,10 @@ const drugSearchResults = document.querySelector('#drug-search-results');
 const inventoryUpdateDate = document.querySelector('#inventory-update-date');
 const protectedWhatsAppUrls = new WeakMap();
 
-function trackEvent() {}
+function trackEvent(eventName, eventParameters = {}) {
+  if (typeof window.gtag !== 'function') return;
+  window.gtag('event', eventName, eventParameters);
+}
 
 function protectWhatsAppLink(link, destination = link.href) {
   if (!link || !destination.includes('wa.me/201055283966')) return;
