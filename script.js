@@ -34,7 +34,18 @@ document.querySelectorAll('a[href*="wa.me/201055283966"]').forEach((link) => pro
 function setAnalyticsConsent(status, { sendPageView = false } = {}) {
   try { localStorage.setItem('eman-analytics-consent', status); } catch (error) {}
   if (status === 'granted') {
-    window.loadEmanAnalytics?.({ sendPageView });
+    if (window.emanAnalyticsLoaded && typeof window.gtag === 'function') {
+      window.gtag('consent', 'update', { analytics_storage: 'granted' });
+      if (sendPageView) {
+        window.gtag('event', 'page_view', {
+          page_title: document.title,
+          page_location: `${window.location.origin}${window.location.pathname}`,
+          page_path: window.location.pathname
+        });
+      }
+    } else {
+      window.loadEmanAnalytics?.({ sendPageView });
+    }
   } else if (window.emanAnalyticsLoaded && typeof window.gtag === 'function') {
     window.gtag('consent', 'update', { analytics_storage: status });
   }
