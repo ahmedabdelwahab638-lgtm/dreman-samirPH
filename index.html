@@ -24,11 +24,37 @@
   <meta name="twitter:image" content="https://ahmedabdelwahab638-lgtm.github.io/dreman-samirPH/assets/share-preview.jpg">
   <meta name="twitter:image:alt" content="لوجو صيدلية دكتورة إيمان سمير الصاوي ورقم التواصل">
   <title>صيدلية دكتورة إيمان سمير الصاوي</title>
+  <!-- Google Analytics 4 with consent mode. Search terms and medicine names are never sent. -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    let savedAnalyticsConsent = 'denied';
+    try {
+      savedAnalyticsConsent = localStorage.getItem('eman-analytics-consent') === 'granted' ? 'granted' : 'denied';
+    } catch (error) {}
+    gtag('consent', 'default', {
+      analytics_storage: savedAnalyticsConsent,
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      wait_for_update: 500
+    });
+    gtag('js', new Date());
+    gtag('config', 'G-XY2PCPGG32', {
+      anonymize_ip: true,
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false,
+      send_page_view: savedAnalyticsConsent === 'granted',
+      page_location: window.location.origin + window.location.pathname,
+      page_path: window.location.pathname
+    });
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XY2PCPGG32"></script>
   <link rel="icon" href="assets/mark.webp" type="image/webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;family=Playfair+Display:wght@600;700;800&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260812-recent-products">
+  <link rel="stylesheet" href="styles.css?v=20260812-analytics">
   <script>
     try {
       const savedTheme = localStorage.getItem('eman-pharmacy-theme');
@@ -521,14 +547,25 @@
       </div>
       <div class="footer-contact"><span>واتساب واتصال</span><a href="tel:+201055283966" dir="ltr">010&nbsp;5528&nbsp;3966</a></div>
     </div>
-    <div class="shell footer-bottom"><span>© 2026 صيدلية دكتورة إيمان سمير الصاوي</span><a href="#top">العودة للأعلى ↑</a></div>
+    <div class="shell footer-bottom"><span>© 2026 صيدلية دكتورة إيمان سمير الصاوي</span><button class="privacy-settings" id="privacy-settings" type="button">إعدادات الخصوصية</button><a href="#top">العودة للأعلى ↑</a></div>
   </footer>
+
+  <aside class="consent-banner" id="consent-banner" aria-labelledby="consent-title" hidden>
+    <div class="consent-copy">
+      <strong id="consent-title">خصوصيتك مهمة</strong>
+      <p>نستخدم Google Analytics لقياس الزيارات وتحسين الموقع. لا نرسل اسم الدواء الذي تبحث عنه، ويمكنك الرفض أو تغيير اختيارك لاحقًا.</p>
+    </div>
+    <div class="consent-actions">
+      <button class="consent-reject" id="consent-reject" type="button">رفض</button>
+      <button class="consent-accept" id="consent-accept" type="button">قبول التحليلات</button>
+    </div>
+  </aside>
 
   <a class="whatsapp-float" href="https://wa.me/201055283966?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%AF%D9%88%D8%A7%D8%A1." target="_blank" rel="noopener" aria-label="تواصل مع الصيدلية على واتساب">
     <span class="whatsapp-mark" aria-hidden="true">WA</span>
     <span class="whatsapp-text"><small>تواصل الآن</small><strong>واتساب</strong></span>
   </a>
 
-  <script src="script.js?v=20260812-arabic-search-v2"></script>
+  <script src="script.js?v=20260812-analytics"></script>
 </body>
 </html>

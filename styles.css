@@ -402,6 +402,18 @@ h1, h2, h3 {
 .whatsapp-text small { font-size: 8px; }
 .whatsapp-text strong { margin-top: 2px; font-size: 13px; }
 
+.privacy-settings { padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; text-decoration: underline; text-underline-offset: 3px; }
+.privacy-settings:hover, .privacy-settings:focus-visible { color: var(--gold-700); }
+.consent-banner { position: fixed; z-index: 120; right: 22px; bottom: 22px; width: min(560px, calc(100% - 44px)); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 22px; padding: 20px; border: 1px solid rgba(200, 143, 36, .4); border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.consent-banner[hidden] { display: none; }
+.consent-copy strong { font-size: 14px; }
+.consent-copy p { margin: 7px 0 0; color: var(--muted); font-size: 11px; line-height: 1.8; }
+.consent-actions { display: flex; gap: 8px; }
+.consent-actions button { min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 10px; font-weight: 800; }
+.consent-accept { border-color: var(--green-900) !important; background: var(--green-900); color: #fff; }
+.consent-reject { background: var(--surface-soft); color: var(--ink); }
+.consent-actions button:focus-visible { outline: 3px solid color-mix(in srgb, var(--gold-500) 72%, transparent); outline-offset: 2px; }
+
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; transition-delay: var(--reveal-delay, 0ms); }
 .reveal.is-visible { opacity: 1; transform: translateY(0); }
 
@@ -526,6 +538,9 @@ h1, h2, h3 {
   .footer-bottom a { display: none; }
   .whatsapp-float { left: 14px; bottom: 14px; min-height: 52px; }
   .whatsapp-mark { width: 36px; height: 36px; }
+  .consent-banner { right: 14px; bottom: 14px; width: calc(100% - 28px); grid-template-columns: 1fr; gap: 14px; padding: 17px; }
+  .consent-actions { display: grid; grid-template-columns: 1fr 1.35fr; }
+  .consent-actions button { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

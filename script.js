@@ -8,6 +8,72 @@ const drugSearchInput = document.querySelector('#drug-search-input');
 const drugSearchClear = document.querySelector('#drug-search-clear');
 const drugSearchResults = document.querySelector('#drug-search-results');
 const inventoryUpdateDate = document.querySelector('#inventory-update-date');
+const consentBanner = document.querySelector('#consent-banner');
+const consentAccept = document.querySelector('#consent-accept');
+const consentReject = document.querySelector('#consent-reject');
+const privacySettings = document.querySelector('#privacy-settings');
+const protectedWhatsAppUrls = new WeakMap();
+
+function getAnalyticsConsent() {
+  try { return localStorage.getItem('eman-analytics-consent'); } catch (error) { return null; }
+}
+
+function trackEvent(eventName, eventParameters = {}) {
+  if (getAnalyticsConsent() !== 'granted' || typeof window.gtag !== 'function') return;
+  window.gtag('event', eventName, eventParameters);
+}
+
+function protectWhatsAppLink(link, destination = link.href) {
+  if (!link || !destination.includes('wa.me/201055283966')) return;
+  protectedWhatsAppUrls.set(link, destination);
+  link.href = 'https://wa.me/201055283966';
+}
+
+document.querySelectorAll('a[href*="wa.me/201055283966"]').forEach((link) => protectWhatsAppLink(link));
+
+function setAnalyticsConsent(status, { sendPageView = false } = {}) {
+  try { localStorage.setItem('eman-analytics-consent', status); } catch (error) {}
+  if (typeof window.gtag === 'function') {
+    window.gtag('consent', 'update', { analytics_storage: status });
+    if (status === 'granted' && sendPageView) {
+      window.gtag('event', 'page_view', {
+        page_title: document.title,
+        page_location: window.location.origin + window.location.pathname,
+        page_path: window.location.pathname
+      });
+    }
+  }
+  consentBanner?.setAttribute('hidden', '');
+}
+
+if (!getAnalyticsConsent()) consentBanner?.removeAttribute('hidden');
+consentAccept?.addEventListener('click', () => setAnalyticsConsent('granted', { sendPageView: true }));
+consentReject?.addEventListener('click', () => setAnalyticsConsent('denied'));
+privacySettings?.addEventListener('click', () => consentBanner?.removeAttribute('hidden'));
+
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[href]');
+  if (!link) return;
+
+  const href = link.getAttribute('href') ?? '';
+  const protectedWhatsAppUrl = protectedWhatsAppUrls.get(link);
+  if (protectedWhatsAppUrl) {
+    event.preventDefault();
+    const context = link.closest('.drug-result') ? 'drug_search_result'
+      : link.closest('.shortage-product') ? 'shortage_product'
+      : link.classList.contains('whatsapp-float') ? 'floating_button'
+      : link.classList.contains('nav-whatsapp') ? 'header_button'
+      : link.closest('#contact') ? 'contact_section'
+      : 'site_content';
+    trackEvent('whatsapp_click', { link_context: context });
+    if (link.target === '_blank') window.open(protectedWhatsAppUrl, '_blank', 'noopener');
+    else window.location.assign(protectedWhatsAppUrl);
+  } else if (href.startsWith('tel:')) {
+    trackEvent('phone_click', { link_context: link.closest('footer') ? 'footer' : 'site_content' });
+  } else if (link.classList.contains('map-link')) {
+    trackEvent('map_click', { link_context: 'location_section' });
+  }
+});
 
 function updateThemeButton() {
   const isDark = root.dataset.theme === 'dark';
@@ -84,6 +150,7 @@ whatsappForm?.addEventListener('submit', (event) => {
   ].join('\n');
 
   formStatus.textContent = 'تم تجهيز الرسالة. سيتم فتح واتساب الآن.';
+  trackEvent('whatsapp_form_submit', { form_name: 'contact_whatsapp' });
   const whatsappUrl = `https://wa.me/201055283966?text=${encodeURIComponent(message)}`;
   window.location.assign(whatsappUrl);
 });
@@ -209,7 +276,7 @@ function createDrugResult(item) {
 
   const action = document.createElement('a');
   action.className = 'drug-result-action';
-  action.href = createWhatsAppLink(item.name, item.available);
+  protectWhatsAppLink(action, createWhatsAppLink(item.name, item.available));
   action.target = '_blank';
   action.rel = 'noopener';
   action.textContent = 'اطلب توفيره عبر واتساب';
@@ -231,7 +298,7 @@ function createEmptySearchState(message, query = '') {
   if (query) {
     const action = document.createElement('a');
     action.className = 'drug-result-action';
-    action.href = createWhatsAppLink(query, false);
+    protectWhatsAppLink(action, createWhatsAppLink(query, false));
     action.target = '_blank';
     action.rel = 'noopener';
     action.textContent = 'اطلب توفيره عبر واتساب';
@@ -292,6 +359,7 @@ if (drugSearchInput && drugSearchResults) {
             ? 'لم نجد الاسم بهذه الكتابة. جرّب كتابته بالإنجليزية كما هو على العبوة، أو اطلب توفيره مباشرةً.'
             : 'لم نجد الاسم في آخر تحديث. يمكنك طلب توفيره مباشرةً.';
           drugSearchResults.replaceChildren(createEmptySearchState(missingMessage, rawQuery));
+          scheduleSearchAnalytics('not_found', 0);
           return;
         }
 
@@ -307,6 +375,18 @@ if (drugSearchInput && drugSearchResults) {
         }
 
         drugSearchResults.replaceChildren(fragment);
+        scheduleSearchAnalytics('found', matches.length);
+      }
+
+      let searchAnalyticsTimer;
+      function scheduleSearchAnalytics(resultStatus, resultCount) {
+        window.clearTimeout(searchAnalyticsTimer);
+        searchAnalyticsTimer = window.setTimeout(() => {
+          trackEvent('drug_search', {
+            search_result: resultStatus,
+            result_count: Math.min(resultCount, 100)
+          });
+        }, 700);
       }
 
       drugSearchInput.addEventListener('input', renderDrugSearch);
