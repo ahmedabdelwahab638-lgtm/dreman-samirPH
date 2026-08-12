@@ -8,20 +8,9 @@ const drugSearchInput = document.querySelector('#drug-search-input');
 const drugSearchClear = document.querySelector('#drug-search-clear');
 const drugSearchResults = document.querySelector('#drug-search-results');
 const inventoryUpdateDate = document.querySelector('#inventory-update-date');
-const consentBanner = document.querySelector('#consent-banner');
-const consentAccept = document.querySelector('#consent-accept');
-const consentReject = document.querySelector('#consent-reject');
-const privacySettings = document.querySelector('#privacy-settings');
 const protectedWhatsAppUrls = new WeakMap();
 
-function getAnalyticsConsent() {
-  try { return localStorage.getItem('eman-analytics-consent'); } catch (error) { return null; }
-}
-
-function trackEvent(eventName, eventParameters = {}) {
-  if (getAnalyticsConsent() !== 'granted' || typeof window.gtag !== 'function') return;
-  window.gtag('event', eventName, eventParameters);
-}
+function trackEvent() {}
 
 function protectWhatsAppLink(link, destination = link.href) {
   if (!link || !destination.includes('wa.me/201055283966')) return;
@@ -30,32 +19,6 @@ function protectWhatsAppLink(link, destination = link.href) {
 }
 
 document.querySelectorAll('a[href*="wa.me/201055283966"]').forEach((link) => protectWhatsAppLink(link));
-
-function setAnalyticsConsent(status, { sendPageView = false } = {}) {
-  try { localStorage.setItem('eman-analytics-consent', status); } catch (error) {}
-  if (status === 'granted') {
-    if (window.emanAnalyticsLoaded && typeof window.gtag === 'function') {
-      window.gtag('consent', 'update', { analytics_storage: 'granted' });
-      if (sendPageView) {
-        window.gtag('event', 'page_view', {
-          page_title: document.title,
-          page_location: `${window.location.origin}${window.location.pathname}`,
-          page_path: window.location.pathname
-        });
-      }
-    } else {
-      window.loadEmanAnalytics?.({ sendPageView });
-    }
-  } else if (window.emanAnalyticsLoaded && typeof window.gtag === 'function') {
-    window.gtag('consent', 'update', { analytics_storage: status });
-  }
-  consentBanner?.setAttribute('hidden', '');
-}
-
-if (!getAnalyticsConsent()) consentBanner?.removeAttribute('hidden');
-consentAccept?.addEventListener('click', () => setAnalyticsConsent('granted', { sendPageView: true }));
-consentReject?.addEventListener('click', () => setAnalyticsConsent('denied'));
-privacySettings?.addEventListener('click', () => consentBanner?.removeAttribute('hidden'));
 
 document.addEventListener('click', (event) => {
   const link = event.target.closest('a[href]');
